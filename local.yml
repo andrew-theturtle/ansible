@@ -1,0 +1,23 @@
+- hosts: localhost
+  become: true
+  vars:
+    source_key: "./.ssh/id_ed25519"
+    dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519"
+  pre_tasks:
+    - name: Update cache
+      apt:
+        update_cache: true
+      tags:
+        - always
+
+  tasks:
+    - import_tasks: fem-tasks/ssh.yml
+    - import_tasks: fem-tasks/core-setup.yml
+    - import_tasks: fem-tasks/node.yml
+    - import_tasks: fem-tasks/npm-packages.yml
+    - import_tasks: fem-tasks/zsh.yml
+    - import_tasks: fem-tasks/nvim-setup.yml
+    - import_tasks: fem-tasks/dotfiles.yml
+    - import_tasks: fem-tasks/productivity.yml
+
+
