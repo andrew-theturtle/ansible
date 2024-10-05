@@ -1,0 +1,22 @@
+- name: Install npm
+  become: true
+  apt:
+    name: npm
+  tags:
+    &tags_for_node_tasks [ 'node', 'never' ]
+
+- name: Install nvm
+  shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  args:
+    creates: "{{ lookup('env', 'HOME') }}/.nvm/nvm.sh"
+  tags:
+    *tags_for_node_tasks
+
+- name: Install node 20
+  command:
+    cmd: bash -ic '. {{ lookup('env', 'HOME') }}/.nvm/nvm.sh && nvm install 20'
+  args:
+    creates: "{{ lookup('env', 'HOME' )}}/.nvm/versions/node"
+  tags:
+    *tags_for_node_tasks

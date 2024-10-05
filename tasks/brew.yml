@@ -1,0 +1,10 @@
+- name: Install brew block
+  block:
+    - name: Install brew
+      shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    - name: Add brew to path from /home/linuxbrew/.linuxbrew
+      shell: test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+      ignore_errors: yes
+  tags:
+    - brew
+    - never

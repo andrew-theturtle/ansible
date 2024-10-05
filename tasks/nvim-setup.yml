@@ -1,0 +1,47 @@
+- name: Get Packer
+  ansible.builtin.git:
+    repo: 'https://github.com/wbthomason/packer.nvim'
+    dest: "{{ lookup('env', 'HOME') }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
+  tags:
+    &tags_for_neovim_tasks [ 'neovim' ]
+
+- name: Add neovim ppa
+  apt_repository:
+    repo: 'ppa:neovim-ppa/unstable'
+  tags:
+    *tags_for_neovim_tasks
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  tags:
+    *tags_for_neovim_tasks
+
+- name: Install neovim
+  apt:
+    name: neovim
+    state: present
+  tags:
+    *tags_for_neovim_tasks
+
+- name: Neovim Plugin Development 1
+  become: true
+  apt:
+    name: luarocks
+    state: present
+  tags:
+    *tags_for_neovim_tasks
+
+- name: Neovim Plugin Development 2 luacheck
+  become: true
+  shell: luarocks install luacheck
+  tags:
+    *tags_for_neovim_tasks
+
+- name: Install ripgrep for telescope
+  apt:
+    name: ripgrep
+    state: present
+  tags:
+    *tags_for_neovim_tasks
+
