@@ -43,7 +43,15 @@
   tags:
     *tags_for_zsh_tasks
 
+- name: Check whether default .zshrc exists
+  stat:
+    path: ~/.zshrc
+  register: zshrc_stats
+  tags:
+    *tags_for_zsh_tasks
+
 - name: Remove default .zshrc
   shell: rm ~/.zshrc
+  when: zshrc_stats.stat.exists == True
   tags:
     *tags_for_zsh_tasks
