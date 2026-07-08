@@ -5,6 +5,7 @@
     &tags_for_zsh_tasks [ 'dotfiles', 'zsh' ]
 
 - name: Change shell
+  become: true
   shell: chsh -s $(which zsh)
   tags:
     *tags_for_zsh_tasks
@@ -43,7 +44,15 @@
   tags:
     *tags_for_zsh_tasks
 
+- name: Check whether default .zshrc exists
+  stat:
+    path: ~/.zshrc
+  register: zshrc_stats
+  tags:
+    *tags_for_zsh_tasks
+
 - name: Remove default .zshrc
   shell: rm ~/.zshrc
+  when: zshrc_stats.stat.exists == True
   tags:
     *tags_for_zsh_tasks
