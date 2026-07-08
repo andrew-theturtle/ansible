@@ -3,14 +3,14 @@
     repo: 'https://github.com/wbthomason/packer.nvim'
     dest: "{{ lookup('env', 'HOME') }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
   tags:
-    &tags_for_neovim_tasks [ 'neovim' ]
+    - packer
 
 - name: Add neovim ppa
   become: true
   apt_repository:
     repo: 'ppa:neovim-ppa/unstable'
   tags:
-    *tags_for_neovim_tasks
+    &tags_for_neovim_tasks [ 'neovim' ]
 
 - name: Update apt cache
   become: true
@@ -33,13 +33,13 @@
     name: luarocks
     state: present
   tags:
-    *tags_for_neovim_tasks
+    - neovim-plugin
 
 - name: Neovim Plugin Development 2 luacheck
   become: true
   shell: luarocks install luacheck
   tags:
-    *tags_for_neovim_tasks
+    - neovim-plugin
 
 - name: Install ripgrep for telescope
   become: true
@@ -47,5 +47,5 @@
     name: ripgrep
     state: present
   tags:
-    *tags_for_neovim_tasks
+    - neovim-plugin
 
