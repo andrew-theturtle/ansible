@@ -2,6 +2,16 @@
   vars:
     source_key: "./.ssh/id_ed25519"
     dest_key: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519"
+    # Halaxy dev environment (tasks/halaxy-dev.yml)
+    docker_server_root: "{{ lookup('env', 'HOME') }}/docker-server"
+    halaxy_env_repos:
+      - healthkit
+      - api-clinical
+      - api-main
+      - api-file
+    # Provide secrets at runtime, e.g. --extra-vars "composer_github_token=... npm_github_token=..."
+    composer_github_token: ""
+    npm_github_token: ""
   pre_tasks:
     - name: Update cache
       become: true
@@ -19,5 +29,5 @@
     - import_tasks: tasks/nvim-setup.yml
     - import_tasks: tasks/dotfiles.yml
     - import_tasks: tasks/productivity.yml
-
+    - import_tasks: tasks/halaxy-dev.yml
 
