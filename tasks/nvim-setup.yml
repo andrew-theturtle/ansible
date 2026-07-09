@@ -16,10 +16,14 @@
   tags:
     &tags_for_neovim_tasks [ 'neovim' ]
 
-- name: Update apt cache
+# Ansible's apt_repository adds the PPA without the interactive `add-apt-repository`
+# tool, which is what hangs in a non-interactive script context.
+- name: Add neovim ppa
   become: true
-  apt:
-    update_cache: yes
+  ansible.builtin.apt_repository:
+    repo: 'ppa:neovim-ppa/unstable'
+    state: present
+    update_cache: true
   tags:
     *tags_for_neovim_tasks
 
