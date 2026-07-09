@@ -1,0 +1,109 @@
+- name: Install base packages for PHP stack (acl for setfacl, PPA tooling)
+  become: true
+  apt:
+    name:
+      - acl
+      - ca-certificates
+      - lsb-release
+      - gnupg
+      - software-properties-common
+    state: present
+  tags: &tags_for_halaxy_tasks ['halaxy', 'php']
+
+# Ansible's apt_repository adds the PPA without the interactive `add-apt-repository`
+# tool, which is what hangs in a non-interactive script context.
+- name: Add Ondrej PHP PPA
+  become: true
+  ansible.builtin.apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+    update_cache: true
+  tags: *tags_for_halaxy_tasks
+
+- name: Install PHP 8.3 and extensions
+  become: true
+  apt:
+    name:
+      - php8.3
+      - php8.3-bcmath
+      - php8.3-calendar
+      - php8.3-curl
+      - php8.3-dom
+      - php8.3-exif
+      - php8.3-fileinfo
+      - php8.3-gd
+      - php8.3-imap
+      - php8.3-intl
+      - php8.3-mailparse
+      - php8.3-mbstring
+      - php8.3-mysqli
+      - php8.3-pdo
+      - php8.3-simplexml
+      - php8.3-soap
+      - php8.3-sockets
+      - php8.3-zip
+      - php8.3-cli
+      - php8.3-common
+    state: present
+  tags: *tags_for_halaxy_tasks
+
+- name: Install Composer
+  become: true
+  shell: >
+    curl -sS https://getcomposer.org/installer
+    | php -- --install-dir=/usr/local/bin --filename=composer
+  args:
+    creates: /usr/local/bin/composer
+  tags: *tags_for_halaxy_tasks
+
+# Secret is injected via a var (default empty) so no token is committed to the repo.
+# Provide with: --extra-vars "composer_github_token=ghp_xxx"
+# Safe to re-run: composer just rewrites the same value.
+- name: Configure Composer GitHub OAuth token
+  shell: composer config --global github-oauth.github.com "{{ composer_github_token }}"
+  when: composer_github_token | default('') | length > 0
+  no_log: true
+  tags: *tags_for_halaxy_tasks
+
+# Safe to re-run: npm just rewrites the same value into ~/.npmrc.
+- name: Configure npm registry auth token
+  shell: npm config set //registry.npmjs.org/:_authToken "{{ npm_github_token }}"
+  when: npm_github_token | default('') | length > 0
+  no_log: true
+  tags: *tags_for_halaxy_tasks
+
+- name: Clone docker-server
+  ansible.builtin.git:
+    repo: 'git@github.com:healthkit/docker-server.git'
+    dest: "{{ docker_server_root }}"
+    accept_hostkey: true
+    update: false
+  tags: *tags_for_halaxy_tasks
+
+- name: Create project directories
+  file:
+    path: "{{ docker_server_root }}/projects/{{ item }}"
+    state: directory
+    mode: '0775'
+  loop:
+    - deploy
+    - feature
+    - basedata
+  tags: *tags_for_halaxy_tasks
+
+- name: Clone environment repositories (deploy, feature, basedata)
+  ansible.builtin.git:
+    repo: "git@github.com:healthkit/{{ item.1 }}.git"
+    dest: "{{ docker_server_root }}/projects/{{ item.0 }}/{{ item.1 }}"
+    accept_hostkey: true
+    update: false
+  loop: "{{ ['deploy', 'feature', 'basedata'] | product(halaxy_env_repos) | list }}"
+  tags: *tags_for_halaxy_tasks
+
+- name: Clone api-presets
+  ansible.builtin.git:
+    repo: 'git@github.com:healthkit/api-presets.git'
+    dest: "{{ docker_server_root }}/projects/api-presets"
+    accept_hostkey: true
+    update: false
+  tags: *tags_for_halaxy_tasks
