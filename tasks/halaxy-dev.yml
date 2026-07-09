@@ -8,7 +8,8 @@
       - gnupg
       - software-properties-common
     state: present
-  tags: &tags_for_halaxy_tasks ['halaxy', 'php']
+  tags:
+      - php
 
 # Ansible's apt_repository adds the PPA without the interactive `add-apt-repository`
 # tool, which is what hangs in a non-interactive script context.
@@ -18,7 +19,8 @@
     repo: ppa:ondrej/php
     state: present
     update_cache: true
-  tags: *tags_for_halaxy_tasks
+  tags:
+    - php
 
 - name: Install PHP 8.3 and extensions
   become: true
@@ -45,7 +47,8 @@
       - php8.3-cli
       - php8.3-common
     state: present
-  tags: *tags_for_halaxy_tasks
+  tags:
+    - php
 
 - name: Install Composer
   become: true
@@ -54,7 +57,8 @@
     | php -- --install-dir=/usr/local/bin --filename=composer
   args:
     creates: /usr/local/bin/composer
-  tags: *tags_for_halaxy_tasks
+  tags:
+    - php
 
 # Secret is injected via a var (default empty) so no token is committed to the repo.
 # Provide with: --extra-vars "composer_github_token=ghp_xxx"
@@ -63,7 +67,7 @@
   shell: composer config --global github-oauth.github.com "{{ composer_github_token }}"
   when: composer_github_token | default('') | length > 0
   no_log: true
-  tags: *tags_for_halaxy_tasks
+  tags: &tags_for_halaxy_tasks ['halaxy']
 
 # Safe to re-run: npm just rewrites the same value into ~/.npmrc.
 - name: Configure npm registry auth token
