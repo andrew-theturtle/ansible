@@ -5,10 +5,14 @@
   tags:
     - packer
 
-- name: Add neovim ppa
+- name: Install PPA tooling for neovim (software-properties-common for apt_repository)
   become: true
-  apt_repository:
-    repo: 'ppa:neovim-ppa/unstable'
+  apt:
+    name:
+      - ca-certificates
+      - gnupg
+      - software-properties-common
+    state: present
   tags:
     &tags_for_neovim_tasks [ 'neovim' ]
 
